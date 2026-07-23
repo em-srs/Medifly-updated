@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -65,6 +66,10 @@ public class PrescriptionController {
 
     @PutMapping("/{id}/verify")
     public ResponseEntity<?> verifyPrescription(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        if (id == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Prescription ID is required"));
+        }
+
         String status = payload.get("status");
         String notes = payload.get("notes");
 
@@ -73,7 +78,7 @@ public class PrescriptionController {
             Prescription p = presOpt.get();
             if (status != null) p.setStatus(status);
             if (notes != null) p.setAdminNotes(notes);
-            Prescription updated = prescriptionRepository.save(p);
+            Prescription updated = prescriptionRepository.save(Objects.requireNonNull(p));
             return ResponseEntity.ok(updated);
         }
 

@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/medicines")
+@RequestMapping({"/api/medicines", "/api/v1/medicines"})
 public class MedicineController {
 
     @Autowired
@@ -85,6 +85,10 @@ public class MedicineController {
 
     @PutMapping("/{id}/price")
     public ResponseEntity<?> updateMedicinePrice(@PathVariable Long id, @RequestBody Map<String, Double> payload) {
+        if (id == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Medicine ID is required"));
+        }
+
         Double price = payload.get("price");
         if (price == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Price is required"));

@@ -68,6 +68,9 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrderById(@PathVariable Long id) {
+        if (id == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Order ID is required"));
+        }
         Optional<Order> order = orderRepository.findById(id);
         if (order.isPresent()) {
             return ResponseEntity.ok(order.get());
@@ -77,6 +80,9 @@ public class OrderController {
 
     @PutMapping("/{id}/pay")
     public ResponseEntity<?> updateOrderToPaid(@PathVariable Long id, @RequestBody Order.PaymentResult paymentResult) {
+        if (id == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Order ID is required"));
+        }
         Optional<Order> orderOpt = orderRepository.findById(id);
         if (orderOpt.isPresent()) {
             Order order = orderOpt.get();
