@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import MedicineAutocomplete from '@/components/MedicineAutocomplete';
 import styles from './SubscriptionPage.module.css';
 import useScrollReveal from '@/hooks/useScrollReveal';
 import { Info, Settings, Package, CheckCircle2, Check, AlertTriangle, IndianRupee, Pill, Calendar, Lightbulb, Trash2, X, Star, PartyPopper, Bell, Hospital } from 'lucide-react';
@@ -469,17 +470,16 @@ export default function SubscriptionPage() {
       {modal === 'addMed' && (
         <Modal title="Add Medicine to Auto-Refill" onClose={closeModal}>
           <div className={styles.formGroup}>
-            <label>Search Medicine</label>
-            <input
-              className={styles.inputField}
-              list="med-list"
-              placeholder="Type medicine name…"
+            <label>Search Medicine (from Database)</label>
+            <MedicineAutocomplete
               value={medSearch}
-              onChange={e => setMedSearch(e.target.value)}
+              onChange={val => setMedSearch(val)}
+              onSelect={med => {
+                setMedSearch(med.brandName || med.name);
+              }}
+              placeholder="Type medicine name (e.g. Crocin, Dolo, Calpol)..."
+              autoFocus
             />
-            <datalist id="med-list">
-              {MEDICINE_SEARCH.map(m => <option key={m} value={m} />)}
-            </datalist>
           </div>
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
@@ -487,13 +487,14 @@ export default function SubscriptionPage() {
               <input className={styles.inputField} type="number" min={1} max={500} value={medQty} onChange={e => setMedQty(+e.target.value)} />
             </div>
             <div className={styles.formGroup}>
-              <label>Frequency (days)</label>
+              <label>Refill Frequency</label>
               <select className={styles.inputField} value={medFreq} onChange={e => setMedFreq(+e.target.value)}>
-                <option value={15}>Every 15 days</option>
-                <option value={30}>Every 30 days</option>
-                <option value={45}>Every 45 days</option>
-                <option value={60}>Every 60 days</option>
-                <option value={90}>Every 90 days</option>
+                <option value={1}>Daily (Every 1 day)</option>
+                <option value={7}>Weekly (Every 7 days)</option>
+                <option value={14}>Bi-weekly (Every 14 days)</option>
+                <option value={30}>Monthly (Every 30 days)</option>
+                <option value={60}>Bi-monthly (Every 60 days)</option>
+                <option value={90}>Quarterly (Every 90 days)</option>
               </select>
             </div>
           </div>

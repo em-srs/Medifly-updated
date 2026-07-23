@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import MedicineCard from '@/components/MedicineCard';
 import styles from './MedicinesPage.module.css';
 import { AlertTriangle, Sparkles, Pill, Search, X } from 'lucide-react';
@@ -21,10 +22,20 @@ const CATEGORIES = [
 ];
 
 export default function MedicinesPage() {
-  const [query,          setQuery]          = useState('');
+  const [searchParams] = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
+  const [query, setQuery] = useState(initialQuery);
   const [activeCategory, setActiveCategory] = useState('all');
-  const [sortBy,         setSortBy]         = useState('name');
-  const [currentPage,    setCurrentPage]    = useState(1);
+  const [sortBy, setSortBy] = useState('name');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Sync state if URL search param changes
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q !== null) {
+      setQuery(q);
+    }
+  }, [searchParams]);
 
   // API response state
   const [items,       setItems]       = useState([]);

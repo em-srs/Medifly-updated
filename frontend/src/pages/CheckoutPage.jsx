@@ -57,7 +57,7 @@ export default function CheckoutPage() {
             <div className={styles.successIcon}><CheckCircle2 size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /></div>
             <h2>Order Placed Successfully!</h2>
             <p className={styles.orderId}>Order ID: MF-{Date.now().toString().slice(-8)}</p>
-            <p>Your medicines will be delivered within 1–6 hours. Track your order from the dashboard.</p>
+            <p>Your order is confirmed! Quick ASAP delivery under 30 mins or scheduled time slot tracking is active.</p>
             <div className={styles.successActions}>
               <Link to="/dashboard" className="btn btn-primary btn-lg"><BarChart3 size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /> Go to Dashboard</Link>
               <Link to="/medicines" className="btn btn-secondary btn-lg"><Pill size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /> Order More</Link>
@@ -90,12 +90,12 @@ export default function CheckoutPage() {
 
             {/* Delivery Type */}
             <div className={styles.section} data-reveal="left" data-delay="80">
-              <h3><Bike size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /> Delivery Type</h3>
+              <h3><Bike size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /> Delivery Speed & Method</h3>
               <div className={styles.deliveryOptions}>
                 {[
-                  { id: 'standard', label: 'Standard', time: '1–6 hours', fee: '₹' + deliveryFee, icon: <Package size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /> },
-                  { id: 'express', label: 'Express', time: '30 min – 1 hr', fee: '₹' + (deliveryFee + 20), icon: <Zap size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /> },
-                  { id: 'emergency', label: 'Emergency', time: '< 30 min', fee: '₹' + (deliveryFee + emergencyFee), icon: <ShieldAlert size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /> },
+                  { id: 'express', label: 'Express ASAP', time: 'Under 30 mins', fee: '₹' + deliveryFee, icon: <Zap size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /> },
+                  { id: 'scheduled', label: 'Scheduled Slot', time: 'Set your time slot', fee: '₹' + Math.max(0, deliveryFee - 10), icon: <Package size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /> },
+                  { id: 'auto_renew', label: 'Auto Renew', time: 'Daily / Weekly / Monthly', fee: 'FREE', icon: <Bike size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /> },
                 ].map(opt => (
                   <button
                     key={opt.id}

@@ -50,10 +50,10 @@ export default function LoginPage() {
           <div className={styles.branding}>
             <span className={styles.brandIcon}>⚕️</span>
             <h1>Welcome to <span className="text-gradient">MediFly</span></h1>
-            <p>Medicines delivered in 1–6 hours. Login to access your dashboard, prescriptions, and orders.</p>
+            <p>Medicines delivered under 30 minutes or scheduled to your doorstep. Login to access your dashboard, prescriptions, and orders.</p>
           </div>
           <div className={styles.features}>
-            <div className={styles.feature}><span><Zap size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /></span> Quick 1–6 hour delivery</div>
+            <div className={styles.feature}><span><Zap size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /></span> Quick ASAP delivery under 30 mins</div>
             <div className={styles.feature}><span><TestTubes size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /></span> Salt comparison tool</div>
             <div className={styles.feature}><span><RefreshCw size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /></span> Auto-refill for chronic meds</div>
             <div className={styles.feature}><span><Lock size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /></span> Secure prescription vault</div>
