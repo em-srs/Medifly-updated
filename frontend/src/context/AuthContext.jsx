@@ -1,18 +1,43 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useUser, useClerk, useAuth as useClerkAuth } from '@clerk/clerk-react';
+import { setAuthTokenGetter } from '@/services/api';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user: clerkUser, isLoaded, isSignedIn } = useUser();
+  const { signOut, openSignIn } = useClerk();
+  const { getToken } = useClerkAuth();
+
+  const [localUser, setLocalUser] = useState(null);
+
+  // Bind Clerk JWT token getter to API service
+  useEffect(() => {
+    setAuthTokenGetter(() => getToken());
+  }, [getToken]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('medifly_user');
-    if (saved) {
-      setUser(JSON.parse(saved));
+    if (isLoaded && isSignedIn && clerkUser) {
+      const activeUser = {
+        id: clerkUser.id,
+        name: clerkUser.fullName || clerkUser.firstName || clerkUser.primaryEmailAddress?.emailAddress?.split('@')[0] || 'User',
+        email: clerkUser.primaryEmailAddress?.emailAddress || '',
+        phone: clerkUser.primaryPhoneNumber?.phoneNumber || '',
+        role: clerkUser.publicMetadata?.role || 'user',
+        imageUrl: clerkUser.imageUrl,
+        isSubscriber: false,
+      };
+      setLocalUser(activeUser);
+      localStorage.setItem('medifly_user', JSON.stringify(activeUser));
+    } else if (isLoaded && !isSignedIn) {
+      const saved = localStorage.getItem('medifly_user');
+      if (saved) {
+        setLocalUser(JSON.parse(saved));
+      } else {
+        setLocalUser(null);
+      }
     }
-    setLoading(false);
-  }, []);
+  }, [isLoaded, isSignedIn, clerkUser]);
 
   const login = (phone, role = 'user') => {
     const userData = {
@@ -21,47 +46,49 @@ export function AuthProvider({ children }) {
       name: role === 'admin' ? 'Admin User' : role === 'pharmacy' ? 'PharmaCare' : role === 'rider' ? 'Rider' : 'User',
       role,
       isSubscriber: false,
-      subscribedAt: null,
-      subscriptionPlan: null,
-      subscriptionExpiry: null,
-      joinedAt: new Date().toISOString()
     };
-    setUser(userData);
+    setLocalUser(userData);
     localStorage.setItem('medifly_user', JSON.stringify(userData));
     return userData;
   };
 
   const logout = () => {
-    setUser(null);
+    if (isSignedIn) {
+      signOut();
+    }
+    setLocalUser(null);
     localStorage.removeItem('medifly_user');
+    localStorage.removeItem('medifly_jwt_token');
   };
 
   const subscribe = (plan) => {
-    const expiry = new Date();
-    if (plan === 'monthly') {
-      expiry.setMonth(expiry.getMonth() + 1);
-    } else {
-      expiry.setFullYear(expiry.getFullYear() + 1);
-    }
     const updated = {
-      ...user,
+      ...localUser,
       isSubscriber: true,
-      subscribedAt: new Date().toISOString(),
       subscriptionPlan: plan,
-      subscriptionExpiry: expiry.toISOString()
     };
-    setUser(updated);
+    setLocalUser(updated);
     localStorage.setItem('medifly_user', JSON.stringify(updated));
   };
 
   const updateUser = (data) => {
-    const updated = { ...user, ...data };
-    setUser(updated);
+    const updated = { ...localUser, ...data };
+    setLocalUser(updated);
     localStorage.setItem('medifly_user', JSON.stringify(updated));
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, subscribe, updateUser }}>
+    <AuthContext.Provider value={{
+      user: localUser,
+      loading: !isLoaded,
+      isSignedIn,
+      clerkUser,
+      login,
+      logout,
+      openSignIn,
+      subscribe,
+      updateUser
+    }}>
       {children}
     </AuthContext.Provider>
   );
