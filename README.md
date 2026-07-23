@@ -9,8 +9,8 @@ Medifly is a modern, ultra-fast medicine delivery application designed to bring 
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19, Vite, React Router, Socket.io Client, Lucide icons, CSS Modules, custom `MedicineAutocomplete` component for interactive search.
-- **Backend**: Java 21, Spring Boot 3.3.5, Spring Security, JPA/Hibernate, WebSockets.
+- **Frontend**: React 19, Vite, React Router, Lucide icons, CSS Modules, custom `MedicineAutocomplete` component, and a dedicated API service client (`fetch` with JWT authentication).
+- **Backend**: Java 21, Spring Boot 3.3.5, Spring Security (JWT-based stateless authentication), JPA/Hibernate, WebSockets (STOMP/SockJS), and an automated database seeder (`MedicineDataSeeder`).
 - **Database**: PostgreSQL (Production) / H2 In-Memory Database (Development Fallback).
 
 ---
@@ -30,11 +30,15 @@ Medifly is a modern, ultra-fast medicine delivery application designed to bring 
 2. **Node.js LTS** (Node 24+ and NPM 11+)
 3. PostgreSQL (Optional; if not configured, the backend automatically runs in H2 In-Memory mode).
 
+### Database Seeding
+
+On startup, the backend automatically detects if the database is empty and seeds medicine records using the `MedicineDataSeeder` from `medicines.json` (located in the classpath or `frontend/public/medicines.json`).
+
 ---
 
 ### Setup & Run Commands
 
-From the repository root, install the frontend dependencies and start both services:
+From the repository root, install the frontend dependencies and start both services (the backend runs on port `5000` and the frontend on port `5173` / `3000`):
 
 bash
 # Install frontend packages
