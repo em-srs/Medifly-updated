@@ -5,23 +5,8 @@
 
 const API_BASE_URL = 'http://localhost:5000/api/v1';
 
-let tokenGetter = null;
-
-export function setAuthTokenGetter(fn) {
-  tokenGetter = fn;
-}
-
 async function fetchWithAuth(url, options = {}) {
-  let token = localStorage.getItem('medifly_jwt_token');
-  if (tokenGetter) {
-    try {
-      const clerkToken = await tokenGetter();
-      if (clerkToken) token = clerkToken;
-    } catch (e) {
-      console.warn('Failed to retrieve Clerk token:', e);
-    }
-  }
-
+  const token = localStorage.getItem('medifly_jwt_token');
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -31,6 +16,7 @@ async function fetchWithAuth(url, options = {}) {
   const response = await fetch(url, { ...options, headers });
   
   if (response.status === 401) {
+    // Clear invalid token if unauthenticated
     localStorage.removeItem('medifly_jwt_token');
   }
 

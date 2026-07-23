@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { UserButton, SignedIn, SignedOut } from '@clerk/clerk-react';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import styles from './Header.module.css';
@@ -210,38 +209,46 @@ export default function Header() {
               {totalItems > 0 && <span className={styles.cartCount}>{totalItems}</span>}
             </button>
 
-            {/* Clerk User Button & Account Dropdown */}
-            <SignedIn>
-              <div style={{ marginLeft: '8px', display: 'flex', alignItems: 'center' }}>
-                <UserButton afterSignOutUrl="/" />
-              </div>
-            </SignedIn>
+            {/* Account pill */}
+            <div className={styles.accountPill} ref={menuRef}>
+              <button
+                className={styles.accountPillBtn}
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                aria-label="User menu"
+              >
+                <i className="ti ti-menu-2" />
+                <div className={styles.avatar}>{initials}</div>
+              </button>
 
-            <SignedOut>
-              <div className={styles.accountPill} ref={menuRef}>
-                <button
-                  className={styles.accountPillBtn}
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  aria-label="User menu"
-                >
-                  <i className="ti ti-menu-2" />
-                  <div className={styles.avatar}>{initials}</div>
-                </button>
-
-                {userMenuOpen && (
-                  <div className={styles.userDropdown}>
-                    <div className={styles.dropdownHeader}>
-                      <strong>Welcome to MediFly</strong>
-                      <span className={styles.dropdownRole}>Sign in to continue</span>
-                    </div>
-                    <div className={styles.dropdownDivider} />
-                    <Link to="/login" className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}>
-                      <i className="ti ti-key" /> Login / Register
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </SignedOut>
+              {userMenuOpen && (
+                <div className={styles.userDropdown}>
+                  {user ? (
+                    <>
+                      <div className={styles.dropdownHeader}>
+                        <strong>{user.name}</strong>
+                        <span className={styles.dropdownRole}>{user.role}</span>
+                      </div>
+                      <div className={styles.dropdownDivider} />
+                      <Link to="/profile"   className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}><i className="ti ti-user" /> My profile</Link>
+                      <Link to="/dashboard" className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}><i className="ti ti-chart-bar" /> Dashboard</Link>
+                      <Link to="/orders"    className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}><i className="ti ti-package" /> My orders</Link>
+                      <Link to="/settings"  className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}><i className="ti ti-settings" /> Settings</Link>
+                      <div className={styles.dropdownDivider} />
+                      <button className={styles.dropdownLogout} onClick={handleLogout}><i className="ti ti-logout" /> Logout</button>
+                    </>
+                  ) : (
+                    <>
+                      <div className={styles.dropdownHeader}>
+                        <strong>Welcome to MediFly</strong>
+                        <span className={styles.dropdownRole}>Sign in to continue</span>
+                      </div>
+                      <div className={styles.dropdownDivider} />
+                      <Link to="/login" className={styles.dropdownItem} onClick={() => setUserMenuOpen(false)}><i className="ti ti-key" /> Login / Register</Link>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Hamburger — mobile only */}
             <button
