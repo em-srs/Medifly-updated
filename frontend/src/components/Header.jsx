@@ -266,7 +266,7 @@ export default function Header() {
 
             {/* ── Segment 0: Medicine or salt ── */}
             <div
-              className={`${styles.searchSeg} ${activeSearch === 0 ? styles.searchSegActive : ''}`}
+              className={`${styles.searchSeg} ${activeSearch === 0 ? styles.searchSegActive : searchQuery.trim() ? styles.searchSegFilled : ''}`}
               onClick={(e) => handleSegClick(0, e)}
             >
               <span className={styles.segLabel}>
@@ -276,13 +276,25 @@ export default function Header() {
               <span className={styles.segValue}>
                 {searchQuery || 'Search medicine or salt'}
               </span>
+              {searchQuery.trim() && (
+                <button
+                  className={styles.clearSegBtn}
+                  title="Clear search"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSearchQuery('');
+                  }}
+                >
+                  <i className="ti ti-x" />
+                </button>
+              )}
             </div>
 
             <div className={styles.segDivider} />
 
             {/* ── Segment 1: Deliver to ── */}
             <div
-              className={`${styles.searchSeg} ${activeSearch === 1 ? styles.searchSegActive : ''}`}
+              className={`${styles.searchSeg} ${activeSearch === 1 ? styles.searchSegActive : location ? styles.searchSegFilled : ''}`}
               onClick={(e) => handleSegClick(1, e)}
             >
               <span className={styles.segLabel}>
@@ -296,7 +308,7 @@ export default function Header() {
 
             {/* ── Segment 2: Need it by ── */}
             <div
-              className={`${styles.searchSeg} ${activeSearch === 2 ? styles.searchSegActive : ''}`}
+              className={`${styles.searchSeg} ${activeSearch === 2 ? styles.searchSegActive : deliverySlot ? styles.searchSegFilled : ''}`}
               onClick={(e) => handleSegClick(2, e)}
             >
               <span className={styles.segLabel}>
