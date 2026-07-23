@@ -1,0 +1,17 @@
+{
+  "name": "medifly",
+  "version": "1.0.0",
+  "description": "Medifly - Emergency & Subscription Medicine Delivery Platform (Java Spring Boot Backend)",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "cd backend && gradlew bootRun",
+    "build:backend": "cd backend && gradlew bootJar",
+    "build:frontend": "npm --prefix frontend run build",
+    "start:backend": "cd backend && gradlew bootRun"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
