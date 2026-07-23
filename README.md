@@ -9,12 +9,11 @@ Medifly is a modern, ultra-fast medicine delivery application designed to bring 
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19, Vite, React Router, Socket.io Client, Lucide icons.
+- **Frontend**: React 19, Vite, React Router, Socket.io Client, Lucide icons, CSS Modules, custom `MedicineAutocomplete` component for interactive search.
 - **Backend**: Java 21, Spring Boot 3.3.5, Spring Security, JPA/Hibernate, WebSockets.
 - **Database**: PostgreSQL (Production) / H2 In-Memory Database (Development Fallback).
 
 ---
-
 ## 📦 Project Structure
 
 - `/frontend` - React Vite client UI application.
@@ -35,11 +34,32 @@ Medifly is a modern, ultra-fast medicine delivery application designed to bring 
 
 ### Setup & Run Commands
 
-You can manage both the frontend and backend from the root directory using the following NPM scripts:
+From the repository root, install the frontend dependencies and start both services:
 
-#### 1. Running in Development
-To run both the backend and frontend concurrently:
+bash
+# Install frontend packages
+npm ci
 
+# Start development mode (backend + frontend) concurrently
+npm run dev
+
+
+The `dev` script launches the Spring Boot backend (`./gradlew bootRun`) and the Vite‑powered React frontend with hot‑reloading. The application will be available at `http://localhost:5173` and the API at `http://localhost:8080`.
+
+### Additional Notes
+
+- The redesign introduces an **interactive medicine search** powered by the new `MedicineAutocomplete` component. No extra setup is required beyond the standard frontend install.
+- **Express delivery** and **auto‑refill subscription** features are now part of the UI; they rely on the existing backend endpoints, so ensure the backend is running.
+- If you prefer to run the services separately, you can use:
+  bash
+  # Backend only
+  ./gradlew bootRun
+
+  # Frontend only (from the frontend folder)
+  cd frontend && npm run dev
+  
+
+Enjoy the refreshed MediFly experience!
 # In PowerShell:
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; npm run dev
 
