@@ -1,3 +1,4 @@
+
 # 🚀 Medifly
 
 **Hyperlocal Emergency & Subscription Medicine Delivery Platform**
@@ -38,7 +39,7 @@ You can manage both the frontend and backend from the root directory using the f
 
 #### 1. Running in Development
 To run both the backend and frontend concurrently:
-```bash
+
 # In PowerShell:
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; npm run dev
 
