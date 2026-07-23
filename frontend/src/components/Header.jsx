@@ -48,7 +48,9 @@ export default function Header() {
   // ── Search State ──
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [location, setLocation] = useState(searchParams.get('location') || 'Mohali, Punjab');
+  const [customLocationSet, setCustomLocationSet] = useState(Boolean(searchParams.get('location')));
   const [deliverySlot, setDeliverySlot] = useState(searchParams.get('slot') || 'As soon as possible');
+  const [customSlotSet, setCustomSlotSet] = useState(Boolean(searchParams.get('slot')));
   const [customPincode, setCustomPincode] = useState('');
   const [dbMedicines, setDbMedicines] = useState([]);
 
@@ -144,6 +146,7 @@ export default function Header() {
 
   const handleSelectLocation = (locName) => {
     setLocation(locName);
+    setCustomLocationSet(true);
     setActiveSearch(null);
   };
 
@@ -151,6 +154,7 @@ export default function Header() {
     e.preventDefault();
     if (customPincode.trim()) {
       setLocation(`PIN ${customPincode.trim()}`);
+      setCustomLocationSet(true);
       setCustomPincode('');
       setActiveSearch(null);
     }
@@ -158,6 +162,7 @@ export default function Header() {
 
   const handleSelectSlot = (slotLabel) => {
     setDeliverySlot(slotLabel);
+    setCustomSlotSet(true);
     setActiveSearch(null);
   };
 
@@ -294,7 +299,7 @@ export default function Header() {
 
             {/* ── Segment 1: Deliver to ── */}
             <div
-              className={`${styles.searchSeg} ${activeSearch === 1 ? styles.searchSegActive : location ? styles.searchSegFilled : ''}`}
+              className={`${styles.searchSeg} ${activeSearch === 1 ? styles.searchSegActive : customLocationSet ? styles.searchSegFilled : ''}`}
               onClick={(e) => handleSegClick(1, e)}
             >
               <span className={styles.segLabel}>
@@ -302,13 +307,26 @@ export default function Header() {
                 Deliver to
               </span>
               <span className={styles.segValue}>{location}</span>
+              {customLocationSet && (
+                <button
+                  className={styles.clearSegBtn}
+                  title="Reset location"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLocation('Mohali, Punjab');
+                    setCustomLocationSet(false);
+                  }}
+                >
+                  <i className="ti ti-x" />
+                </button>
+              )}
             </div>
 
             <div className={styles.segDivider} />
 
             {/* ── Segment 2: Need it by ── */}
             <div
-              className={`${styles.searchSeg} ${activeSearch === 2 ? styles.searchSegActive : deliverySlot ? styles.searchSegFilled : ''}`}
+              className={`${styles.searchSeg} ${activeSearch === 2 ? styles.searchSegActive : customSlotSet ? styles.searchSegFilled : ''}`}
               onClick={(e) => handleSegClick(2, e)}
             >
               <span className={styles.segLabel}>
@@ -316,6 +334,19 @@ export default function Header() {
                 Need it by
               </span>
               <span className={styles.segValue}>{deliverySlot}</span>
+              {customSlotSet && (
+                <button
+                  className={styles.clearSegBtn}
+                  title="Reset delivery slot"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeliverySlot('As soon as possible');
+                    setCustomSlotSet(false);
+                  }}
+                >
+                  <i className="ti ti-x" />
+                </button>
+              )}
             </div>
 
             {/* ── Search action button ── */}
