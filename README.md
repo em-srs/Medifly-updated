@@ -29,7 +29,7 @@ The platform features a static dataset UI browsing over 400+ medicines across mu
 2. **Node.js LTS** (Node 24+ and NPM 11+)
 3. PostgreSQL (Optional; if not configured, the backend automatically runs in H2 In-Memory mode. Refer to `Medifly_PostgreSQL_Plan.docx` for database setup and migration details).
 4. **Clerk Publishable Key** (Optional; set `VITE_CLERK_PUBLISHABLE_KEY` in your frontend environment variables to enable Clerk Email OTP & Google authentication. When configured, Clerk authentication state is seamlessly synced with `AuthContext` to manage user sessions and dashboard access).
-5. **Docker** (Optional; for containerized backend deployment and cloud hosting using the production `Dockerfile` in the backend directory).
+5. **Docker** (Optional; for containerized backend deployment and cloud hosting using the production `Dockerfile` in the backend directory. The Dockerfile automatically configures executable permissions for `gradlew` to support seamless Linux-based builds on platforms like Render).
 
 ### Database Seeding
 
