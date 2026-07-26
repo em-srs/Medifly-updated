@@ -36,11 +36,8 @@ public class MedicineController {
         Pageable pageable = PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 100), Sort.by("brandName").ascending());
 
         if (search != null && !search.trim().isEmpty()) {
-            String sanitizedSearch = search.trim()
-                    .replace("\\", "\\\\")
-                    .replace("%", "\\%")
-                    .replace("_", "\\_");
-            Page<Medicine> pageResult = medicineRepository.searchMedicinesFast(sanitizedSearch, pageable);
+            String query = search.trim();
+            Page<Medicine> pageResult = medicineRepository.findByBrandNameContainingIgnoreCaseOrGenericNameContainingIgnoreCase(query, query, pageable);
             return ResponseEntity.ok(pageResult.getContent());
         }
 

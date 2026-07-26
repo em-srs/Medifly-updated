@@ -18,12 +18,7 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long> {
 
     List<Medicine> findBySaltComposition_Id(Long saltId);
 
-    @Query(value = "SELECT * FROM medicines WHERE brand_name ILIKE CONCAT('%', :query, '%') OR generic_name ILIKE CONCAT('%', :query, '%')",
-           countQuery = "SELECT count(*) FROM medicines WHERE brand_name ILIKE CONCAT('%', :query, '%') OR generic_name ILIKE CONCAT('%', :query, '%')",
-           nativeQuery = true)
-    Page<Medicine> searchMedicinesFast(@Param("query") String query, Pageable pageable);
+    Page<Medicine> findByBrandNameContainingIgnoreCaseOrGenericNameContainingIgnoreCase(String brand, String generic, Pageable pageable);
 
     Page<Medicine> findByCategoryIgnoreCase(String category, Pageable pageable);
-
-    List<Medicine> findByBrandNameContainingIgnoreCaseOrGenericNameContainingIgnoreCase(String brand, String generic);
 }
