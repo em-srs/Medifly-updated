@@ -1,27 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import styles from './MedicineAutocomplete.module.css';
-
-// Shared module-level cache for medicines.json so we only fetch once
-let cachedMedicines = null;
-let fetchPromise = null;
-
-function loadMedicines() {
-  if (cachedMedicines) return Promise.resolve(cachedMedicines);
-  if (!fetchPromise) {
-    fetchPromise = fetch('/medicines.json')
-      .then(res => res.json())
-      .then(data => {
-        cachedMedicines = data;
-        return data;
-      })
-      .catch(err => {
-        console.error('Failed to load medicines:', err);
-        fetchPromise = null;
-        return [];
-      });
-  }
-  return fetchPromise;
-}
+import { searchMedicinesApi } from '@/services/api';
 
 export default function MedicineAutocomplete({
   value,
@@ -31,14 +10,10 @@ export default function MedicineAutocomplete({
   className = '',
   autoFocus = false,
 }) {
-  const [medicines, setMedicines] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
-
-  useEffect(() => {
-    loadMedicines().then(data => setMedicines(data));
-  }, []);
+  const debounceRef = useRef(null);
 
   useEffect(() => {
     const handleOutsideClick = (e) => {
@@ -60,16 +35,17 @@ export default function MedicineAutocomplete({
       return;
     }
 
-    const q = val.toLowerCase().trim();
-    const matches = medicines.filter(med => {
-      const bName = (med.brandName || med.name || '').toLowerCase();
-      const gName = (med.genericName || med.salt || '').toLowerCase();
-      const mName = (med.manufacturer || '').toLowerCase();
-      return bName.includes(q) || gName.includes(q) || mName.includes(q);
-    }).slice(0, 8);
-
-    setSuggestions(matches);
-    setIsOpen(true);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const matches = await searchMedicinesApi(val.trim(), 0, 8);
+        setSuggestions(matches);
+        setIsOpen(matches.length > 0);
+      } catch (err) {
+        setSuggestions([]);
+        setIsOpen(false);
+      }
+    }, 250);
   };
 
   const handleSelectMed = (med) => {

@@ -22,37 +22,52 @@ export default function useScrollReveal(threshold = 0.05) {
     const root = ref.current;
     if (!root) return;
 
+    const revealElement = (el) => {
+      if (!el) return;
+      const delay = el.dataset.delay || '0';
+      el.style.transitionDelay = `${delay}ms`;
+      el.classList.add('revealed');
+    };
+
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const el = entry.target;
-            const delay = el.dataset.delay || '0';
-            el.style.transitionDelay = `${delay}ms`;
-            el.classList.add('revealed');
-            io.unobserve(el);
+            revealElement(entry.target);
+            io.unobserve(entry.target);
           }
         });
       },
-      { threshold }
+      { threshold: 0 }
     );
 
-    // Observe all current [data-reveal] elements
     const observeAll = () => {
       root.querySelectorAll('[data-reveal]').forEach((el) => {
         if (!el.classList.contains('revealed')) {
-          io.observe(el);
+          const rect = el.getBoundingClientRect();
+          if (rect.top < window.innerHeight && rect.bottom >= 0) {
+            revealElement(el);
+          } else {
+            io.observe(el);
+          }
         }
       });
     };
 
     observeAll();
 
-    // Watch for dynamically added children (e.g. after state change)
+    // Safety fallback so content is never trapped at opacity: 0
+    const timer = setTimeout(() => {
+      if (root) {
+        root.querySelectorAll('[data-reveal]').forEach(revealElement);
+      }
+    }, 300);
+
     const mo = new MutationObserver(() => observeAll());
     mo.observe(root, { childList: true, subtree: true });
 
     return () => {
+      clearTimeout(timer);
       io.disconnect();
       mo.disconnect();
     };

@@ -11,7 +11,7 @@ import { Sparkles, Pill } from 'lucide-react';
  *  • `MEDICINE_COUNT` – static count constant for display text
  */
 
-export const MEDICINE_COUNT = 400;
+export const MEDICINE_COUNT = 10000;
 
 export const categories = [
   { id: 'all',         label: 'All Medicines', icon: <Pill size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} /> },

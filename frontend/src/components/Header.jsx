@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import { searchMedicinesApi } from '@/services/api';
 import styles from './Header.module.css';
 
 /* ── Mode tabs (top row, centered) ─────────────────────── */
@@ -47,28 +48,29 @@ export default function Header() {
 
   // ── Search State ──
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+
   const [location, setLocation] = useState(searchParams.get('location') || 'Mohali, Punjab');
   const [customLocationSet, setCustomLocationSet] = useState(Boolean(searchParams.get('location')));
   const [deliverySlot, setDeliverySlot] = useState(searchParams.get('slot') || 'As soon as possible');
   const [customSlotSet, setCustomSlotSet] = useState(Boolean(searchParams.get('slot')));
   const [customPincode, setCustomPincode] = useState('');
-  const [dbMedicines, setDbMedicines] = useState([]);
+  const [liveSuggestions, setLiveSuggestions] = useState([]);
 
   useEffect(() => {
-    fetch('/medicines.json')
-      .then(res => res.json())
-      .then(data => setDbMedicines(data))
-      .catch(() => {});
-  }, []);
-
-  const liveSuggestions = searchQuery.trim().length >= 1
-    ? dbMedicines.filter(m => {
-        const q = searchQuery.toLowerCase().trim();
-        const bName = (m.brandName || m.name || '').toLowerCase();
-        const gName = (m.genericName || m.salt || '').toLowerCase();
-        return bName.includes(q) || gName.includes(q);
-      }).slice(0, 6)
-    : [];
+    if (searchQuery.trim().length < 1) {
+      setLiveSuggestions([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const matches = await searchMedicinesApi(searchQuery.trim(), 0, 6);
+        setLiveSuggestions(matches);
+      } catch {
+        setLiveSuggestions([]);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const menuRef = useRef(null);
   const searchCapsuleRef = useRef(null);

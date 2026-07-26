@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MedicineCard from '@/components/MedicineCard';
+import { searchMedicinesApi } from '@/services/api';
 import styles from './MedicinesPage.module.css';
 import { AlertTriangle, Sparkles, Pill, Search, X } from 'lucide-react';
 
@@ -47,41 +48,33 @@ export default function MedicinesPage() {
   // Debounce timer ref
   const debounceRef = useRef(null);
 
-  // ── Fetch from static JSON ──────────────────────────────────────────────────
+  // ── Fetch from Backend API ──────────────────────────────────────────────────
   const fetchMedicines = useCallback(async (q, category, sort, page) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/medicines.json');
-      if (!res.ok) throw new Error('Failed to fetch medicines');
-      let results = await res.json();
-
-      const query = q?.toLowerCase().trim() || '';
+      const searchTarget = q || (category !== 'all' ? category : '');
+      const results = await searchMedicinesApi(searchTarget, 0, 100);
       
-      if (query) {
-        results = results.filter(
-          (med) =>
-            med.name.toLowerCase().includes(query) ||
-            med.salt.toLowerCase().includes(query) ||
-            med.manufacturer.toLowerCase().includes(query)
-        );
-      } else if (category && category !== 'all') {
-        results = results.filter((med) => med.category === category);
+      let filtered = results;
+      if (category && category !== 'all') {
+        const catLower = category.toLowerCase();
+        filtered = results.filter(med => (med.category || '').toLowerCase().includes(catLower) || (med.name || '').toLowerCase().includes(catLower));
       }
 
-      if (sort === 'price-low')       results.sort((a, b) => a.price - b.price);
-      else if (sort === 'price-high') results.sort((a, b) => b.price - a.price);
-      else                            results.sort((a, b) => a.name.localeCompare(b.name));
+      if (sort === 'price-low')       filtered.sort((a, b) => a.price - b.price);
+      else if (sort === 'price-high') filtered.sort((a, b) => b.price - a.price);
+      else                            filtered.sort((a, b) => a.name.localeCompare(b.name));
 
-      const totalItems = results.length;
+      const totalItems = filtered.length;
       const startIndex = (page - 1) * ITEMS_PER_PAGE;
-      const paginatedItems = results.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+      const paginatedItems = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
       setItems(paginatedItems);
       setTotal(totalItems);
-      setTotalPages(Math.ceil(totalItems / ITEMS_PER_PAGE));
+      setTotalPages(Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE)));
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to connect to backend database');
     } finally {
       setLoading(false);
     }

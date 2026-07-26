@@ -644,45 +644,53 @@ ul, ol {
    data-delay="200" adds a transition-delay (ms).
    ===================================================== */
 
-/* Base hidden state */
+/* Base state — visible by default with entrance transition */
 [data-reveal] {
-  opacity: 0;
-  transform: translateY(32px);
+  opacity: 1;
+  transform: none;
   transition:
-    opacity  0.65s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
+    opacity  0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Slide from left */
+/* Optional subtle entrance offsets */
 [data-reveal="left"] {
-  transform: translateX(-40px);
+  animation: fadeInLeft 0.4s ease-out;
 }
 
-/* Slide from right */
 [data-reveal="right"] {
-  transform: translateX(40px);
+  animation: fadeInRight 0.4s ease-out;
 }
 
-/* Scale up */
 [data-reveal="scale"] {
-  transform: scale(0.88);
-  opacity: 0;
+  animation: scaleIn 0.4s ease-out;
 }
 
-/* Final revealed state — applied by IntersectionObserver */
+/* Final revealed state */
 .revealed {
   opacity: 1 !important;
   transform: none !important;
 }
 
 /* Respect reduced-motion prefs */
-@media (prefers-reduced-motion: reduce) {
-  [data-reveal] {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* =====================================================

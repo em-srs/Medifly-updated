@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { searchMedicinesApi } from '@/services/api';
 import { sampleOrders } from '@/data/mockData';
 import styles from './DashboardPage.module.css';
 import useScrollReveal from '@/hooks/useScrollReveal';
@@ -13,19 +14,13 @@ export default function DashboardPage() {
   const [searchResults, setSearchResults] = useState([]);
   const debounceRef = useRef(null);
 
-  // Debounced medicine search via static JSON
+  // Debounced medicine search via backend API
   useEffect(() => {
     if (searchQuery.length < 2) { setSearchResults([]); return; }
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       try {
-        const res  = await fetch('/medicines.json');
-        const data = await res.json();
-        const sq = searchQuery.toLowerCase();
-        const results = data.filter(med => 
-          med.name.toLowerCase().includes(sq) ||
-          med.salt.toLowerCase().includes(sq)
-        ).slice(0, 5);
+        const results = await searchMedicinesApi(searchQuery, 0, 5);
         setSearchResults(results);
       } catch { setSearchResults([]); }
     }, 300);

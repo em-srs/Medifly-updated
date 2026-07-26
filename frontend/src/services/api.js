@@ -58,16 +58,40 @@ export async function fetchProfileApi() {
 }
 
 // ── Medicine & Salt Search Services ──
-export async function searchMedicinesApi(query = '') {
-  const res = await fetch(`${API_BASE_URL}/medicines?search=${encodeURIComponent(query)}`);
+export function mapBackendMedicine(med) {
+  if (!med) return null;
+  return {
+    id: med.id || med.medicineId,
+    medicineId: med.medicineId || String(med.id),
+    name: med.brandName || med.name || 'Medicine',
+    brandName: med.brandName || med.name || 'Medicine',
+    salt: med.genericName || med.salt || 'Composition',
+    genericName: med.genericName || med.salt || 'Composition',
+    manufacturer: med.manufacturer || 'Generic Pharma',
+    category: med.category || 'allopathy',
+    packSize: med.packSize || 'Pack',
+    price: med.price || 100,
+    mrp: Math.round((med.price || 100) * 1.2),
+    stock: med.stock !== false,
+    prescriptionRequired: med.requiresPrescription || false,
+    coldChain: med.coldChainRequired || false,
+    deliveryTimes: ['15 mins', 'Express']
+  };
+}
+
+export async function searchMedicinesApi(query = '', page = 0, size = 30) {
+  const url = `${API_BASE_URL}/medicines?search=${encodeURIComponent(query)}&page=${page}&size=${size}`;
+  const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch medicines');
-  return res.json();
+  const data = await res.json();
+  return Array.isArray(data) ? data.map(mapBackendMedicine) : [];
 }
 
 export async function fetchMedicineByIdApi(id) {
   const res = await fetch(`${API_BASE_URL}/medicines/${id}`);
   if (!res.ok) throw new Error('Medicine not found');
-  return res.json();
+  const data = await res.json();
+  return mapBackendMedicine(data);
 }
 
 export async function compareSaltsApi(medicineId) {

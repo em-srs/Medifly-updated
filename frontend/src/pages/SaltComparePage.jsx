@@ -4,6 +4,7 @@ import styles from './SaltComparePage.module.css';
 import useScrollReveal from '@/hooks/useScrollReveal';
 import { Info, ShoppingCart, Check, Sparkles, Pill, Search, MessageSquare, ArrowRight, Zap } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { searchMedicinesApi } from '@/services/api';
 
 export default function SaltComparePage() {
   const { addItem } = useCart();
@@ -13,7 +14,7 @@ export default function SaltComparePage() {
   const [results1, setResults1] = useState([]);
   const [med1,     setMed1]     = useState(null);
 
-  // Medicine 2 (alternative — user-chosen or auto-suggested)
+  // Medicine 2 (substitute / alternative)
   const [query2,   setQuery2]   = useState('');
   const [results2, setResults2] = useState([]);
   const [med2,     setMed2]     = useState(null);
@@ -22,26 +23,31 @@ export default function SaltComparePage() {
   const [alternatives, setAlternatives] = useState([]);
   const [autoSuggested, setAutoSuggested] = useState(false);
 
-  const [medicinesData, setMedicinesData] = useState([]);
-
-  useEffect(() => {
-    fetch('/medicines.json')
-      .then(res => res.json())
-      .then(data => setMedicinesData(data))
-      .catch(err => console.error(err));
-  }, []);
-
   const mainRef = useScrollReveal(0.01);
 
-  // --- Search helpers ---
-  const doSearch = (query, exclude = null) => {
-    if (query.trim().length < 2) return [];
-    return medicinesData.filter(med =>
-      (med.brandName.toLowerCase().includes(query.toLowerCase()) ||
-       med.genericName.toLowerCase().includes(query.toLowerCase())) &&
-      (!exclude || med.id !== exclude.id)
-    );
-  };
+  // Live search for query 1
+  useEffect(() => {
+    if (query1.trim().length < 2) { setResults1([]); return; }
+    const timer = setTimeout(async () => {
+      try {
+        const matches = await searchMedicinesApi(query1.trim(), 0, 6);
+        setResults1(med1 ? matches.filter(m => String(m.id) !== String(med1.id)) : matches);
+      } catch { setResults1([]); }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [query1, med1]);
+
+  // Live search for query 2
+  useEffect(() => {
+    if (query2.trim().length < 2) { setResults2([]); return; }
+    const timer = setTimeout(async () => {
+      try {
+        const matches = await searchMedicinesApi(query2.trim(), 0, 6);
+        setResults2(med2 ? matches.filter(m => String(m.id) !== String(med2.id)) : matches);
+      } catch { setResults2([]); }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [query2, med2]);
 
   // Search 1 change
   const handleSearch1 = (e) => {
