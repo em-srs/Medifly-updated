@@ -12,7 +12,7 @@ import java.util.Date;
 @Component
 public class JwtUtils {
 
-    @Value("${jwt.secret:supersecretjwtkey_for_medifly_must_be_at_least_256_bits_long_for_hs256_algorithm}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
     @Value("${jwt.expiration.ms:604800000}") // 7 days
@@ -52,3 +52,4 @@ public class JwtUtils {
         return false;
     }
 }
+

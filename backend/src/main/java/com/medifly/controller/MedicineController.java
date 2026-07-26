@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -32,10 +33,14 @@ public class MedicineController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "30") int size) {
 
-        Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by("brandName").ascending());
+        Pageable pageable = PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 100), Sort.by("brandName").ascending());
 
         if (search != null && !search.trim().isEmpty()) {
-            Page<Medicine> pageResult = medicineRepository.searchMedicinesFast(search.trim(), pageable);
+            String sanitizedSearch = search.trim()
+                    .replace("\\", "\\\\")
+                    .replace("%", "\\%")
+                    .replace("_", "\\_");
+            Page<Medicine> pageResult = medicineRepository.searchMedicinesFast(sanitizedSearch, pageable);
             return ResponseEntity.ok(pageResult.getContent());
         }
 
@@ -97,14 +102,15 @@ public class MedicineController {
     }
 
     @PutMapping("/{id}/price")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PHARMACY')")
     public ResponseEntity<?> updateMedicinePrice(@PathVariable Long id, @RequestBody Map<String, Double> payload) {
         if (id == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Medicine ID is required"));
         }
 
         Double price = payload.get("price");
-        if (price == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Price is required"));
+        if (price == null || price < 0) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Valid non-negative price is required"));
         }
 
         Optional<Medicine> medOpt = medicineRepository.findById(id);
@@ -119,3 +125,4 @@ public class MedicineController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Medicine not found"));
     }
 }
+
