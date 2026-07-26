@@ -24,6 +24,10 @@ springBoot {
 	mainClass = 'com.medifly.MediflyApplication'
 }
 
+bootJar {
+	archiveFileName = 'app.jar'
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
