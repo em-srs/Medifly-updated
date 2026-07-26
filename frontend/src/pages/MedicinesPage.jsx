@@ -47,76 +47,103 @@ export default function MedicinesPage() {
   // Debounce timer ref
   const debounceRef = useRef(null);
 
-  // ── Fetch from Backend API / Fallback JSON ──────────────────────────────────────────
-  const fetchMedicines = useCallback(async (q, category, sort, page) => {
-    setLoading(true);
-    setError(null);
+  // ── Cache for current search session ─────────────────────────────────────────
+  const cacheRef = useRef({});
+  const lastSearchRef = useRef('');
+
+  // Helper: fetch single page data (checks cache first)
+  const fetchSinglePage = useCallback(async (q, category, sort, p) => {
+    if (cacheRef.current[p]) {
+      return cacheRef.current[p];
+    }
+
     try {
-      // 1. Try Live Spring Boot Backend API (Connected to Supabase)
-      const apiPage = page - 1;
+      const apiPage = p - 1;
       const searchParam = q ? `&search=${encodeURIComponent(q)}` : '';
       const apiUrl = `http://localhost:5000/api/medicines?page=${apiPage}&size=${ITEMS_PER_PAGE}${searchParam}`;
 
       const res = await fetch(apiUrl);
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data)) {
-          // If backend returns list directly
-          setItems(data);
-          // Backend has 253,973 items
-          const estTotal = q ? data.length : 253973;
-          setTotal(estTotal);
-          setTotalPages(Math.ceil(estTotal / ITEMS_PER_PAGE));
-          return;
-        } else if (data.content) {
-          // Spring Boot Page object
-          setItems(data.content);
-          setTotal(data.totalElements || 253973);
-          setTotalPages(data.totalPages || Math.ceil(253973 / ITEMS_PER_PAGE));
-          return;
+        const pageItems = Array.isArray(data) ? data : (data.content || []);
+        cacheRef.current[p] = pageItems;
+        return pageItems;
+      }
+    } catch (e) {}
+
+    // Fallback JSON if API offline
+    try {
+      const jsonRes = await fetch('/medicines.json');
+      if (jsonRes.ok) {
+        let results = await jsonRes.json();
+        const query = q?.toLowerCase().trim() || '';
+        if (query) {
+          results = results.filter(
+            (med) =>
+              (med.name || med.brandName || '').toLowerCase().includes(query) ||
+              (med.salt || med.genericName || '').toLowerCase().includes(query) ||
+              (med.manufacturer || '').toLowerCase().includes(query)
+          );
+        } else if (category && category !== 'all') {
+          results = results.filter((med) => med.category === category);
+        }
+        const startIndex = (p - 1) * ITEMS_PER_PAGE;
+        const pageItems = results.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+        cacheRef.current[p] = pageItems;
+        return pageItems;
+      }
+    } catch (e) {}
+
+    return [];
+  }, []);
+
+  // Main fetch function: loads active page & prefetches next 3 pages in background
+  const fetchMedicines = useCallback(async (q, category, sort, page) => {
+    const currentSearchKey = `${q}-${category}-${sort}`;
+    if (lastSearchRef.current !== currentSearchKey) {
+      cacheRef.current = {};
+      lastSearchRef.current = currentSearchKey;
+    }
+
+    // Only show loading spinner if current page is not already cached
+    if (!cacheRef.current[page]) {
+      setLoading(true);
+    }
+    setError(null);
+
+    try {
+      // 1. Load active page
+      const pageData = await fetchSinglePage(q, category, sort, page);
+      setItems(pageData);
+
+      // Estimate total pages
+      const estTotal = q ? (pageData.length < ITEMS_PER_PAGE ? (page - 1) * ITEMS_PER_PAGE + pageData.length : 253973) : 253973;
+      setTotal(estTotal);
+      const estPages = Math.ceil(estTotal / ITEMS_PER_PAGE);
+      setTotalPages(estPages);
+
+      // 2. Prefetch NEXT 3 pages (the next chunk) in background
+      const currentBlock = Math.floor((page - 1) / 3);
+      const nextBlockStart = (currentBlock + 1) * 3 + 1;
+      
+      for (let offset = 0; offset < 3; offset++) {
+        const prefetchPage = nextBlockStart + offset;
+        if (prefetchPage <= estPages && !cacheRef.current[prefetchPage]) {
+          fetchSinglePage(q, category, sort, prefetchPage); // Background async prefetch
         }
       }
 
-      // 2. Fallback to /medicines.json if backend offline
-      const jsonRes = await fetch('/medicines.json');
-      if (!jsonRes.ok) throw new Error('Failed to fetch medicines');
-      let results = await jsonRes.json();
-
-      const query = q?.toLowerCase().trim() || '';
-      if (query) {
-        results = results.filter(
-          (med) =>
-            (med.name || med.brandName || '').toLowerCase().includes(query) ||
-            (med.salt || med.genericName || '').toLowerCase().includes(query) ||
-            (med.manufacturer || '').toLowerCase().includes(query)
-        );
-      } else if (category && category !== 'all') {
-        results = results.filter((med) => med.category === category);
-      }
-
-      if (sort === 'price-low')       results.sort((a, b) => a.price - b.price);
-      else if (sort === 'price-high') results.sort((a, b) => b.price - a.price);
-      else                            results.sort((a, b) => (a.name || a.brandName || '').localeCompare(b.name || b.brandName || ''));
-
-      const totalItems = results.length;
-      const startIndex = (page - 1) * ITEMS_PER_PAGE;
-      const paginatedItems = results.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-      setItems(paginatedItems);
-      setTotal(totalItems);
-      setTotalPages(Math.ceil(totalItems / ITEMS_PER_PAGE));
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchSinglePage]);
 
   // ── Debounced search / immediate filter changes ───────────────────────────
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    // Only debounce the text search; category/sort changes are instant
     const delay = query !== '' ? 300 : 0;
 
     debounceRef.current = setTimeout(() => {
@@ -150,19 +177,16 @@ export default function MedicinesPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // ── Pagination: page numbers with ellipsis ────────────────────────────────
+  // ── Chunked 3-Page Window Display (e.g. 1, 2, 3 -> Next -> 4, 5, 6) ────────
   const getPageNumbers = () => {
+    const currentBlock = Math.floor((currentPage - 1) / 3);
+    const startPage = currentBlock * 3 + 1;
     const pages = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      pages.push(1);
-      if (currentPage > 3) pages.push('...');
-      const start = Math.max(2, currentPage - 1);
-      const end   = Math.min(totalPages - 1, currentPage + 1);
-      for (let i = start; i <= end; i++) pages.push(i);
-      if (currentPage < totalPages - 2) pages.push('...');
-      pages.push(totalPages);
+    for (let i = 0; i < 3; i++) {
+      const p = startPage + i;
+      if (p <= totalPages) {
+        pages.push(p);
+      }
     }
     return pages;
   };
