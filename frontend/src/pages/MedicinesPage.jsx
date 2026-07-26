@@ -47,23 +47,48 @@ export default function MedicinesPage() {
   // Debounce timer ref
   const debounceRef = useRef(null);
 
-  // ── Fetch from static JSON ──────────────────────────────────────────────────
+  // ── Fetch from Backend API / Fallback JSON ──────────────────────────────────────────
   const fetchMedicines = useCallback(async (q, category, sort, page) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/medicines.json');
-      if (!res.ok) throw new Error('Failed to fetch medicines');
-      let results = await res.json();
+      // 1. Try Live Spring Boot Backend API (Connected to Supabase)
+      const apiPage = page - 1;
+      const searchParam = q ? `&search=${encodeURIComponent(q)}` : '';
+      const apiUrl = `http://localhost:5000/api/medicines?page=${apiPage}&size=${ITEMS_PER_PAGE}${searchParam}`;
+
+      const res = await fetch(apiUrl);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          // If backend returns list directly
+          setItems(data);
+          // Backend has 253,973 items
+          const estTotal = q ? data.length : 253973;
+          setTotal(estTotal);
+          setTotalPages(Math.ceil(estTotal / ITEMS_PER_PAGE));
+          return;
+        } else if (data.content) {
+          // Spring Boot Page object
+          setItems(data.content);
+          setTotal(data.totalElements || 253973);
+          setTotalPages(data.totalPages || Math.ceil(253973 / ITEMS_PER_PAGE));
+          return;
+        }
+      }
+
+      // 2. Fallback to /medicines.json if backend offline
+      const jsonRes = await fetch('/medicines.json');
+      if (!jsonRes.ok) throw new Error('Failed to fetch medicines');
+      let results = await jsonRes.json();
 
       const query = q?.toLowerCase().trim() || '';
-      
       if (query) {
         results = results.filter(
           (med) =>
-            med.name.toLowerCase().includes(query) ||
-            med.salt.toLowerCase().includes(query) ||
-            med.manufacturer.toLowerCase().includes(query)
+            (med.name || med.brandName || '').toLowerCase().includes(query) ||
+            (med.salt || med.genericName || '').toLowerCase().includes(query) ||
+            (med.manufacturer || '').toLowerCase().includes(query)
         );
       } else if (category && category !== 'all') {
         results = results.filter((med) => med.category === category);
@@ -71,7 +96,7 @@ export default function MedicinesPage() {
 
       if (sort === 'price-low')       results.sort((a, b) => a.price - b.price);
       else if (sort === 'price-high') results.sort((a, b) => b.price - a.price);
-      else                            results.sort((a, b) => a.name.localeCompare(b.name));
+      else                            results.sort((a, b) => (a.name || a.brandName || '').localeCompare(b.name || b.brandName || ''));
 
       const totalItems = results.length;
       const startIndex = (page - 1) * ITEMS_PER_PAGE;

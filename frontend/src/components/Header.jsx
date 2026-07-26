@@ -51,24 +51,39 @@ export default function Header() {
   const [customLocationSet, setCustomLocationSet] = useState(Boolean(searchParams.get('location')));
   const [deliverySlot, setDeliverySlot] = useState(searchParams.get('slot') || 'As soon as possible');
   const [customSlotSet, setCustomSlotSet] = useState(Boolean(searchParams.get('slot')));
-  const [customPincode, setCustomPincode] = useState('');
   const [dbMedicines, setDbMedicines] = useState([]);
+  const [liveSuggestions, setLiveSuggestions] = useState([]);
 
   useEffect(() => {
-    fetch('/medicines.json')
-      .then(res => res.json())
-      .then(data => setDbMedicines(data))
-      .catch(() => {});
-  }, []);
+    if (searchQuery.trim().length < 1) {
+      setLiveSuggestions([]);
+      return;
+    }
 
-  const liveSuggestions = searchQuery.trim().length >= 1
-    ? dbMedicines.filter(m => {
-        const q = searchQuery.toLowerCase().trim();
-        const bName = (m.brandName || m.name || '').toLowerCase();
-        const gName = (m.genericName || m.salt || '').toLowerCase();
-        return bName.includes(q) || gName.includes(q);
-      }).slice(0, 6)
-    : [];
+    const timer = setTimeout(() => {
+      fetch(`http://localhost:5000/api/medicines?search=${encodeURIComponent(searchQuery.trim())}&size=6`)
+        .then(res => res.json())
+        .then(data => {
+          const list = Array.isArray(data) ? data : (data.content || []);
+          setLiveSuggestions(list.slice(0, 6));
+        })
+        .catch(() => {
+          // Fallback search
+          if (dbMedicines.length === 0) {
+            fetch('/medicines.json').then(r => r.json()).then(d => setDbMedicines(d)).catch(() => {});
+          }
+          const filtered = dbMedicines.filter(m => {
+            const q = searchQuery.toLowerCase().trim();
+            const bName = (m.brandName || m.name || '').toLowerCase();
+            const gName = (m.genericName || m.salt || '').toLowerCase();
+            return bName.includes(q) || gName.includes(q);
+          }).slice(0, 6);
+          setLiveSuggestions(filtered);
+        });
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, dbMedicines]);
 
   const menuRef = useRef(null);
   const searchCapsuleRef = useRef(null);

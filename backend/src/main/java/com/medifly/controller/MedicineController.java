@@ -5,6 +5,10 @@ import com.medifly.model.Salt;
 import com.medifly.repository.MedicineRepository;
 import com.medifly.repository.SaltRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,11 +27,20 @@ public class MedicineController {
     private SaltRepository saltRepository;
 
     @GetMapping
-    public ResponseEntity<List<Medicine>> getMedicines(@RequestParam(required = false) String search) {
+    public ResponseEntity<List<Medicine>> getMedicines(
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "30") int size) {
+
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by("brandName").ascending());
+
         if (search != null && !search.trim().isEmpty()) {
-            return ResponseEntity.ok(medicineRepository.findByBrandNameContainingIgnoreCaseOrGenericNameContainingIgnoreCase(search, search));
+            Page<Medicine> pageResult = medicineRepository.searchMedicinesFast(search.trim(), pageable);
+            return ResponseEntity.ok(pageResult.getContent());
         }
-        return ResponseEntity.ok(medicineRepository.findAll());
+
+        Page<Medicine> pageResult = medicineRepository.findAll(pageable);
+        return ResponseEntity.ok(pageResult.getContent());
     }
 
     @GetMapping("/{id}")
