@@ -5,7 +5,7 @@
 
 Medifly is a modern, ultra-fast medicine delivery application designed to bring essential healthcare products directly to your doorstep. Optimised for emergency and routine subscription medicine restocking, it connects users with pharmacy care precisely when they need it.
 
-The platform features a static dataset UI browsing over 400+ medicines across multiple therapeutic categories (such as Pain Relief, Antibiotics, Diabetes, Heart Care, and more) with robust client-side search, sorting, and pagination.
+The platform features a static dataset UI browsing over 400+ medicines across multiple therapeutic categories (such as Pain Relief, Antibiotics, Diabetes, Heart Care, and more) with robust client-side search, sorting, and pagination. It also supports secure user authentication with Clerk, featuring seamless asynchronous sign-out and account switching capabilities directly from the login interface.
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 19, Vite, React Router, Clerk (for Email OTP & Google authentication), Lucide icons, CSS Modules, custom `MedicineAutocomplete` component, and a dedicated API service client (`fetch` with JWT authentication).
