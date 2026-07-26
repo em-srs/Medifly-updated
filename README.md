@@ -10,7 +10,7 @@ The platform features a static dataset UI browsing over 400+ medicines across mu
 
 - **Frontend**: React 19, Vite, React Router, Clerk (for Email OTP & Google authentication), Vercel Analytics (for tracking page views and visitor metrics), Lucide icons, CSS Modules, custom `MedicineAutocomplete` component, and a dedicated API service client (`fetch` with JWT authentication).
 - **Backend**: Java 21, Spring Boot 3.3.5, JPA/Hibernate, WebSockets (STOMP/SockJS), and an automated database seeder (`MedicineDataSeeder`).
-- **Database**: PostgreSQL (Production) / H2 In-Memory Database (Development Fallback).
+- **Database**: Render-managed PostgreSQL (Production) / H2 In-Memory Database (Development Fallback).
 
 ---
 ## 📦 Project Structure
@@ -27,7 +27,7 @@ The platform features a static dataset UI browsing over 400+ medicines across mu
 
 1. **Java JDK 21+** (e.g. Eclipse Temurin JDK 21 or higher)
 2. **Node.js LTS** (Node 24+ and NPM 11+)
-3. PostgreSQL (Optional; if not configured, the backend automatically runs in H2 In-Memory mode. Refer to `Medifly_PostgreSQL_Plan.docx` for database setup and migration details).
+3. **PostgreSQL** (Optional; configured to use Render-managed PostgreSQL in production. If not configured, the backend automatically runs in H2 In-Memory mode. Refer to `Medifly_PostgreSQL_Plan.docx` for database setup and migration details).
 4. **Clerk Publishable Key** (Optional; set `VITE_CLERK_PUBLISHABLE_KEY` in your frontend environment variables to enable Clerk Email OTP & Google authentication. When configured, Clerk authentication state is seamlessly synced with `AuthContext` to manage user sessions and dashboard access. For production deployments on Vercel, ensure this environment variable is configured in your project settings to trigger and support successful redeploys).
 5. **Docker** (Optional; for containerized backend deployment and cloud hosting using the production `Dockerfile` in the backend directory. The Dockerfile copies the exact `app.jar` build artifact (with the plain jar task disabled in Gradle to prevent duplicate archives) and executes `gradlew` via an explicit `sh` shell wrapper to support seamless Linux-based builds on platforms like Render).
 
