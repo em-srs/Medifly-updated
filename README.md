@@ -18,17 +18,17 @@ Medifly is a modern, ultra-fast medicine delivery application designed to bring 
 
 - `/frontend` - React Vite client UI application.
 - `/backend` - Java Spring Boot server & API logic.
+- `Medifly_PostgreSQL_Plan.docx` - PostgreSQL database integration and schema migration plan.
 - `package.json` - Root monorepo scripts for running both components concurrently.
 
 ---
-
 ## 🚀 Getting Started
 
 ### Prerequisites
 
 1. **Java JDK 21+** (e.g. Eclipse Temurin JDK 21 or higher)
 2. **Node.js LTS** (Node 24+ and NPM 11+)
-3. PostgreSQL (Optional; if not configured, the backend automatically runs in H2 In-Memory mode).
+3. PostgreSQL (Optional; if not configured, the backend automatically runs in H2 In-Memory mode. Refer to `Medifly_PostgreSQL_Plan.docx` for database setup and migration details).
 
 ### Database Seeding
 
@@ -40,9 +40,10 @@ On startup, the backend automatically detects if the database is empty and seeds
 
 From the repository root, install the frontend dependencies and start both services (the backend runs on port `5000` and the frontend on port `5173` / `3000`):
 # Install frontend packages
-npm ci
 
+npm ci
 # Start development mode (backend + frontend) concurrently
+
 npm run dev
 
 
