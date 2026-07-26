@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider }   from '@/context/AuthContext';
 import { CartProvider }   from '@/context/CartContext';
 import { SocketProvider } from '@/context/SocketContext';
@@ -66,6 +67,7 @@ export default function App() {
           </CartProvider>
         </SocketProvider>
       </AuthProvider>
+      <Analytics />
     </BrowserRouter>
   );
 }
