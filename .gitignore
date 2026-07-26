@@ -38,6 +38,7 @@ out/
 
 # OS & IDE Files
 .DS_Store
+~$*.docx
 *.pem
 .vscode/
 .idea/
