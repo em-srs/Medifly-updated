@@ -176,7 +176,7 @@ export default function Header() {
 
   const initials = user?.name
     ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    : 'SK';
+    : null;
 
   return (
     <>
@@ -217,7 +217,9 @@ export default function Header() {
                 aria-label="User menu"
               >
                 <i className="ti ti-menu-2" />
-                <div className={styles.avatar}>{initials}</div>
+                <div className={styles.avatar}>
+                  {initials ? initials : <i className="ti ti-user" style={{ fontSize: '15px' }} />}
+                </div>
               </button>
 
               {userMenuOpen && (
