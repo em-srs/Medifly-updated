@@ -3,7 +3,8 @@
 // Connects React SPA to Spring Boot 3.3.5 Backend (Port 5000)
 // ═══════════════════════════════════════════════════════════
 
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = `${BASE_URL.replace(/\/$/, '')}/api/v1`;
 
 async function fetchWithAuth(url, options = {}) {
   const token = localStorage.getItem('medifly_jwt_token');

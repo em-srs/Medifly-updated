@@ -51,7 +51,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
                 auth.requestMatchers("/api/auth/**", "/api/v1/auth/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/medicines", "/api/medicines/**", "/api/v1/medicines", "/api/v1/medicines/**").permitAll()
+                    .requestMatchers("/api/medicines/**", "/api/medicines", "/api/v1/medicines/**", "/api/v1/medicines").permitAll()
                     .requestMatchers("/h2-console/**").permitAll()
                     .requestMatchers("/ws/**").permitAll()
                     .anyRequest().authenticated()
