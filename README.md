@@ -8,7 +8,7 @@ Medifly is a modern, ultra-fast medicine delivery application designed to bring 
 The platform features a static dataset UI browsing over 400+ medicines across multiple therapeutic categories (such as Pain Relief, Antibiotics, Diabetes, Heart Care, and more) with robust client-side search, sorting, and pagination.
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19, Vite, React Router, Lucide icons, CSS Modules, custom `MedicineAutocomplete` component, and a dedicated API service client (`fetch` with JWT authentication).
+- **Frontend**: React 19, Vite, React Router, Clerk (for Email OTP & Google authentication), Lucide icons, CSS Modules, custom `MedicineAutocomplete` component, and a dedicated API service client (`fetch` with JWT authentication).
 - **Backend**: Java 21, Spring Boot 3.3.5, JPA/Hibernate, WebSockets (STOMP/SockJS), and an automated database seeder (`MedicineDataSeeder`).
 - **Database**: PostgreSQL (Production) / H2 In-Memory Database (Development Fallback).
 
@@ -28,6 +28,7 @@ The platform features a static dataset UI browsing over 400+ medicines across mu
 1. **Java JDK 21+** (e.g. Eclipse Temurin JDK 21 or higher)
 2. **Node.js LTS** (Node 24+ and NPM 11+)
 3. PostgreSQL (Optional; if not configured, the backend automatically runs in H2 In-Memory mode. Refer to `Medifly_PostgreSQL_Plan.docx` for database setup and migration details).
+4. **Clerk Publishable Key** (Optional; set `VITE_CLERK_PUBLISHABLE_KEY` in your frontend environment variables to enable Clerk Email OTP & Google authentication).
 
 ### Database Seeding
 
