@@ -1,21 +1,26 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { SignIn, SignedIn, SignedOut, useUser } from '@clerk/clerk-react';
+import { SignIn, SignedIn, SignedOut, SignOutButton, useClerk } from '@clerk/clerk-react';
 import styles from './LoginPage.module.css';
 import useScrollReveal from '@/hooks/useScrollReveal';
-import { Shield, Lock, TestTubes, RefreshCw, User, CheckCircle2, Zap, Bike, Lightbulb, Hospital } from 'lucide-react';
+import { Shield, Lock, TestTubes, RefreshCw, User, CheckCircle2, Zap, Bike, Lightbulb, Hospital, LogOut } from 'lucide-react';
 
 export default function LoginPage() {
   const [step, setStep] = useState('phone'); // phone, otp, role
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [role, setRole] = useState('user');
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const navigate = useNavigate();
 
   const pageRef = useScrollReveal(0.05);
   const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+  let clerkObj = null;
+  try {
+    clerkObj = useClerk();
+  } catch (e) {}
 
   const handlePhoneSubmit = (e) => {
     e.preventDefault();
@@ -44,6 +49,13 @@ export default function LoginPage() {
     else navigate('/dashboard');
   };
 
+  const handleClerkSignOut = async () => {
+    await logout();
+    if (clerkObj && clerkObj.signOut) {
+      await clerkObj.signOut();
+    }
+  };
+
   return (
     <div className={styles.page}>
       <div className={styles.container} ref={pageRef}>
@@ -69,12 +81,21 @@ export default function LoginPage() {
                   <SignIn fallbackRedirectUrl="/dashboard" signUpFallbackRedirectUrl="/dashboard" />
                 </SignedOut>
                 <SignedIn>
-                  <div style={{ textAlign: 'center', padding: '20px' }}>
+                  <div style={{ textAlign: 'center', padding: '24px 16px' }}>
                     <h2>You are logged in!</h2>
-                    <p style={{ margin: '15px 0' }}>Welcome to MediFly.</p>
-                    <button className="btn btn-primary btn-lg" onClick={() => navigate('/dashboard')}>
-                      Go to Dashboard →
-                    </button>
+                    <p style={{ margin: '12px 0 24px 0', color: '#64748b' }}>Welcome back to MediFly.</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+                      <button className="btn btn-primary btn-lg" style={{ width: '100%' }} onClick={() => navigate('/dashboard')}>
+                        Go to Dashboard →
+                      </button>
+                      <button 
+                        className="btn btn-secondary btn-lg" 
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} 
+                        onClick={handleClerkSignOut}
+                      >
+                        <LogOut size={18} /> Sign Out / Switch Account
+                      </button>
+                    </div>
                   </div>
                 </SignedIn>
               </div>

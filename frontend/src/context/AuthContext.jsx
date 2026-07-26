@@ -7,7 +7,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Clerk hook (safely handles if Clerk is active or not)
   let clerkUser = null;
   let clerkObj = null;
   try {
@@ -18,7 +17,6 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (clerkUser) {
-      // Sync Clerk user with AuthContext
       const clerkAuthData = {
         id: clerkUser.id,
         name: clerkUser.fullName || clerkUser.primaryEmailAddress?.emailAddress?.split('@')[0] || 'Patient',
@@ -33,15 +31,13 @@ export function AuthProvider({ children }) {
       };
       setUser(clerkAuthData);
       localStorage.setItem('medifly_user', JSON.stringify(clerkAuthData));
-      setLoading(false);
-      return;
-    }
-
-    const saved = localStorage.getItem('medifly_user');
-    if (saved) {
-      setUser(JSON.parse(saved));
     } else {
-      setUser(null);
+      const saved = localStorage.getItem('medifly_user');
+      if (saved) {
+        setUser(JSON.parse(saved));
+      } else {
+        setUser(null);
+      }
     }
     setLoading(false);
   }, [clerkUser]);
@@ -63,11 +59,11 @@ export function AuthProvider({ children }) {
     return userData;
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
     localStorage.removeItem('medifly_user');
     if (clerkObj && clerkObj.signOut) {
-      clerkObj.signOut();
+      await clerkObj.signOut();
     }
   };
 
