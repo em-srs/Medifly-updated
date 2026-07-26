@@ -8,7 +8,7 @@ RUN sh ./gradlew bootJar -x test --no-daemon
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY --from=build /app/build/libs/*.jar app.jar
+COPY --from=build /app/build/libs/app.jar app.jar
 
 ENV PORT=5000
 EXPOSE 5000
