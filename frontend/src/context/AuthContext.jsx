@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useUser, useClerk } from '@clerk/clerk-react';
 
 const AuthContext = createContext(null);
 
@@ -6,13 +7,44 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Clerk hook (safely handles if Clerk is active or not)
+  let clerkUser = null;
+  let clerkObj = null;
+  try {
+    const u = useUser();
+    clerkUser = u?.user;
+    clerkObj = useClerk();
+  } catch (e) {}
+
   useEffect(() => {
+    if (clerkUser) {
+      // Sync Clerk user with AuthContext
+      const clerkAuthData = {
+        id: clerkUser.id,
+        name: clerkUser.fullName || clerkUser.primaryEmailAddress?.emailAddress?.split('@')[0] || 'Patient',
+        email: clerkUser.primaryEmailAddress?.emailAddress || '',
+        phone: clerkUser.primaryPhoneNumber?.phoneNumber || '',
+        role: 'user',
+        isSubscriber: false,
+        subscribedAt: null,
+        subscriptionPlan: null,
+        subscriptionExpiry: null,
+        joinedAt: clerkUser.createdAt ? new Date(clerkUser.createdAt).toISOString() : new Date().toISOString()
+      };
+      setUser(clerkAuthData);
+      localStorage.setItem('medifly_user', JSON.stringify(clerkAuthData));
+      setLoading(false);
+      return;
+    }
+
     const saved = localStorage.getItem('medifly_user');
     if (saved) {
       setUser(JSON.parse(saved));
+    } else {
+      setUser(null);
     }
     setLoading(false);
-  }, []);
+  }, [clerkUser]);
 
   const login = (phone, role = 'user') => {
     const userData = {
@@ -34,6 +66,9 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('medifly_user');
+    if (clerkObj && clerkObj.signOut) {
+      clerkObj.signOut();
+    }
   };
 
   const subscribe = (plan) => {
